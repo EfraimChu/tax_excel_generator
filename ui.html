@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>ViewUI example</title>
+    <link rel="stylesheet" type="text/css" href="./css/iview.css">
+    <!--    <link rel="stylesheet" type="text/css" href="https://unpkg.com/view-design/dist/styles/iview.css">-->
+    <script type="text/javascript" src="./js/vue.min.js"></script>
+    <script type="text/javascript" src="./js/iview.min.js"></script>
+    <script src="./js/axios.min.js"></script>
+</head>
+<body>
+<div id="app">
+    <div style="height: 50px"></div>
+
+    <!--    add -->
+    <Row justify="center" align="bottom">
+        <i-form ref="good_data" :model="good_data" :rules="ruleInline" inline>
+
+            <form-item prop="good">
+                <i-input type="text" v-model="good_data.good" placeholder="货物">
+                    <icon type="ios-person-outline" slot="prepend"></icon>
+                </i-input>
+            </form-item>
+
+            <form-item prop="quantity">
+                <i-input type="text" v-model="good_data.quantity" placeholder="数量">
+                    <icon type="ios-lock-outline" slot="prepend"></icon>
+                </i-input>
+            </form-item>
+            <form-item prop="price">
+                <i-input type="text" v-model="good_data.price" placeholder="单价">
+                    <icon type="ios-lock-outline" slot="prepend"></icon>
+                </i-input>
+            </form-item>
+            <form-item>
+                <i-button type="primary" @click="handleSubmit('good_data')">添加</i-button>
+            </form-item>
+        </i-form>
+        </Col>
+    </Row>
+
+    <!--   table  -->
+    <i-table :columns="columns1" :data="data6">
+        <template slot-scope="{ row, index }" slot="action">
+            <i-button type="primary" size="small" style="margin-right: 5px" @click="show(index)">View</i-button>
+            <i-button type="error" size="small" @click="remove(index)">Delete</i-button>
+        </template>
+    </i-table>
+
+
+</div>
+
+<script>
+    axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
+    var Main = {
+        data() {
+            return {
+                columns1: [
+                    {
+                        title: '货物',
+                        key: 'good'
+                    },
+                    {
+                        title: '数量',
+                        key: 'quantity'
+                    },
+                    {
+                        title: '单价 ',
+                        key: 'price'
+                    },
+                    {
+                        title: 'Action',
+                        slot: 'action',
+                        width: 150,
+                        align: 'center'
+                    }
+                ],
+                data6: []
+            }
+        },
+        methods: {
+            show(index) {
+                this.$Modal.info({
+                    title: 'User Info',
+                    content: `Name：${this.data6[index].name}<br>Age：${this.data6[index].age}<br>Address：${this.data6[index].address}`
+                })
+            },
+            remove(index) {
+                this.data6.splice(index, 1);
+            },
+            load_data() {
+                that = this
+                axios.get("/list")
+                    .then(function (resp) {
+                        console.log(resp)
+                        that.data6 = resp.data
+                    })
+                console.log("111")
+                console.log(this.data6)
+            }
+        },
+        created() {
+            this.load_data();
+        },
+    }
+    var add = {
+        data() {
+            return {
+                good_data: {
+                    good: '',
+                    quantity: 0,
+                    price: 0,
+                },
+                ruleInline: {
+                    good: [
+                        {required: true, message: 'Please fill in the good', trigger: 'blur'}
+                    ],
+                    quantity: [
+                        {required: true, message: 'Please fill in the quantity.', trigger: 'blur'},
+                    ]
+                }
+            }
+        },
+        methods: {
+            handleSubmit(good_date) {
+                this.$refs[good_date].validate((valid) => {
+                    if (valid) {
+                        this.$Message.success('Success!');
+                    } else {
+                        this.$Message.error('Fail!');
+                    }
+                })
+
+                console.log(this.good_data)
+                const params = new URLSearchParams();
+                params.append('good', this.good_data.good);
+                params.append('quantity', this.good_data.quantity);
+                params.append('price', this.good_data.price);
+                axios.post('/add', params)
+                    .then(function (response) {
+                        console.log(response);
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+
+                this.load_data()
+            }
+        }
+    }
+
+    var Component = Vue.extend(Main).extend(add)
+    new Component().$mount('#app')
+    // var addComponent = Vue.extend(add)
+    // new addComponent().$mount('#app')
+</script>
+
+</body>
+</html>
