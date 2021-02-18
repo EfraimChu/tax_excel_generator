@@ -4,6 +4,7 @@ import json
 import web
 from txt_current_model import TaxCurrentData
 
+# todo  使用 Bottle: Python Web Framework¶
 urls = (
     '/', 'index',
     '/js/(.*)', 'js',
